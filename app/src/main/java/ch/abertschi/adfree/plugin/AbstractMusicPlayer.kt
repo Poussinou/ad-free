@@ -30,14 +30,18 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
 
     private var player: MediaPlayer? = null
     private var isPlaying: Boolean = false
+    private var onStopCallables: ArrayList<() -> Unit> = ArrayList()
 
     open fun isPlaying(): Boolean = isPlaying
 
-    open fun playAudio(url: String, context: Context) {
+    open fun playAudio(url: String, context: Context, cacheUrl: Boolean = true) {
         runAndCatchException(context, {
-            val proxy = AppSettings.instance(context).getHttpProxy()
-            val proxyUrl = proxy.getProxyUrl(url)
-            getMediaPlayerObservable(context, proxyUrl).subscribe { player ->
+            val playerUrl = url
+            if (cacheUrl) {
+                val proxy = AppSettings.instance(context).getHttpProxy()
+                val playerUrl = proxy.getProxyUrl(url)
+            }
+            getMediaPlayerObservable(context, playerUrl).subscribe { player ->
                 this.player = player
                 player.setOnErrorListener { _, what, _ -> throw RuntimeException("Problem with audio player, code: " + what) }
                 player.start()
@@ -86,7 +90,7 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
             asyncPreparationDone = true
             am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, prefs.loadAudioVolume(context), AudioManager.FLAG_SHOW_UI)
             player?.setOnCompletionListener {
-                releasePlayer(context)
+                stopPlayer(context)
             }
             source.onNext(player)
         }
@@ -105,6 +109,19 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
         }
     }
 
+    fun addCallbackForOnStop(function: () -> Unit) {
+        synchronized(onStopCallables) {
+            onStopCallables.add { function }
+        }
+    }
+
+    fun callOnStopCallbacks() {
+        synchronized(onStopCallables) {
+            onStopCallables?.forEach { it() }
+            onStopCallables.clear()
+        }
+    }
+
     private fun runAndCatchException(context: Context, function: () -> Unit): Unit {
         try {
             function()
@@ -113,7 +130,8 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
         }
     }
 
-    open fun releasePlayer(context: Context) {
+    open fun stopPlayer(context: Context) {
+        callOnStopCallbacks()
         runAndCatchException(context, {
             onPlayerClose(context)
             isPlaying = false

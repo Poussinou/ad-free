@@ -56,7 +56,9 @@ class InterdimCablePlugin : AdPlugin, AnkoLogger {
         updatePluginSettings(context.applicationContext)
     }
 
-    override fun onPluginDeactivated(context: PluginContet) {}
+    override fun onPluginDeactivated(context: PluginContet) {
+        audioPlayer?.stopPlayer(context = context.applicationContext)
+    }
 
     override fun play(context: PluginContet) {
         if (model == null) {
@@ -84,7 +86,7 @@ class InterdimCablePlugin : AdPlugin, AnkoLogger {
     }
 
     override fun forceStop(context: PluginContet) {
-        audioPlayer?.releasePlayer(context.applicationContext)
+        audioPlayer?.stopPlayer(context.applicationContext)
     }
 
     private fun getTrackUrl(model: InterdimCableModel?): String? {

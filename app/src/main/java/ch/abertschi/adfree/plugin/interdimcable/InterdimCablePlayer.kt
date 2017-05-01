@@ -17,26 +17,6 @@ import org.jetbrains.anko.runOnUiThread
  */
 class InterdimCablePlayer(prefs: PreferencesFactory) : AbstractMusicPlayer(prefs) {
 
-    private var onStopCallables: ArrayList<() -> Unit> = ArrayList()
-
-    fun addCallbackForOnStop(function: () -> Unit) {
-        synchronized(onStopCallables) {
-            onStopCallables.add { function }
-        }
-    }
-
-    fun callOnStopCallbacks() {
-        synchronized(onStopCallables) {
-            onStopCallables?.forEach { it() }
-            onStopCallables.clear()
-        }
-    }
-
-    override fun onPlayerClose(context: Context) {
-        callOnStopCallbacks()
-        super.onPlayerClose(context)
-    }
-
     override fun onAudioLoading(context: Context) {
         context.runOnUiThread {
             longToast("Downloading interdimensional cable ads ...")

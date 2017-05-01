@@ -9,6 +9,7 @@ package ch.abertschi.adfree.plugin
 import android.content.Context
 import ch.abertschi.adfree.model.PreferencesFactory
 import ch.abertschi.adfree.plugin.interdimcable.InterdimCablePlugin
+import ch.abertschi.adfree.plugin.localmusic.LocalMusicPlugin
 import ch.abertschi.adfree.plugin.mute.MutePlugin
 
 /**
@@ -27,7 +28,10 @@ class PluginHandler private constructor() {
     }
 
     private var initPlugin: AdPlugin = MutePlugin()
-    private var plugins: List<AdPlugin> = listOf(initPlugin, InterdimCablePlugin()) // ()
+    private var plugins: List<AdPlugin> =
+            listOf(initPlugin
+                    , LocalMusicPlugin()
+                    , InterdimCablePlugin()) // ()
     private var activePlugin: AdPlugin? = initPlugin
 
     fun getActivePlugin(context: Context): AdPlugin {

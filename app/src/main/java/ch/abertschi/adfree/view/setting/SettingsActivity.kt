@@ -6,11 +6,14 @@
 
 package ch.abertschi.adfree.view.setting
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.text.Html
 import android.view.LayoutInflater
@@ -96,6 +99,23 @@ class SettingsActivity : Fragment(), SettingsView, AnkoLogger {
 
         settingPresenter.onCreate()
         init = true
+
+        // TODO: ask for permissions when plugin is selected not screen is loaded
+        verifyAllPermissions()
+    }
+
+    fun hasPermissions(): Boolean {
+        return ActivityCompat.checkSelfPermission(this.activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun verifyAllPermissions() {
+        if (!hasPermissions()) {
+            ActivityCompat.requestPermissions(
+                    this.activity,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    1
+            )
+        }
     }
 
     override fun onResume() {

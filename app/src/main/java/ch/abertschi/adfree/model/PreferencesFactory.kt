@@ -20,6 +20,7 @@ class PreferencesFactory(context: Context) : AnkoLogger {
     private val prefIsEnabled = "IS_ENABLED"
     private val prefsLastUpdateInServiceDate = "LAST_UPDATE_IN_SERVICE"
     private val prefsFirstRun = "FIRST_RUN"
+    private val prefsAudioVolume = "AUDIO_VOL"
 
     private val prefs: SharedPreferences = context.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
 
@@ -44,6 +45,12 @@ class PreferencesFactory(context: Context) : AnkoLogger {
     }
 
     fun isFirstRun(): Boolean = prefs.getBoolean(prefsFirstRun, false)
+
+    fun storeAudioVolume(volume: Int, context: Context)
+            = prefs.edit().putInt(prefsAudioVolume, volume).commit()
+
+    fun loadAudioVolume(context: Context): Int =
+            prefs.getInt(prefsAudioVolume, 100)
 
     fun getPreferences(): SharedPreferences = prefs
 

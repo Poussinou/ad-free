@@ -96,6 +96,20 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
         }
     }
 
+    // TODO: bug
+    fun fadeOffAudioVolume(context: Context, onDone: () -> Unit) {
+        val am = context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        Observable.just(true).repeat(10).delay(1000, TimeUnit.MILLISECONDS)
+                .subscribeOn(Schedulers.io())
+                .doOnComplete {
+                    if (onDone != null) onDone()
+                }
+                .observeOn(AndroidSchedulers.mainThread()).subscribe {
+            info { "adjust lower " }
+            am.adjustStreamVolume(AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
+        }
+    }
+
     open fun configureAudioVolume(context: Context) {
         val am = context.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         am.setStreamVolume(AudioManager.STREAM_VOICE_CALL, prefs.loadAudioVolume(context), AudioManager.FLAG_SHOW_UI)
@@ -128,6 +142,13 @@ abstract class AbstractMusicPlayer(val prefs: PreferencesFactory) : AnkoLogger {
         } catch(e: Throwable) {
             onAudioPlayerException(e, context)
         }
+    }
+
+    open fun stopPlayerAndFadeOffAudio(context: Context) {
+        fadeOffAudioVolume(context, onDone = {
+            stopPlayer(context)
+            throw UnsupportedOperationException("not yet implemented")
+        })
     }
 
     open fun stopPlayer(context: Context) {
